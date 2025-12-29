@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: auth_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+    networks:
+      - auth_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    image: migrate/migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      [
+        "-path",
+        "/migrations",
+        "-database",
+        "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable",
+        "up",
+      ]
+    volumes:
+      - ./migrations:/migrations
+    networks:
+      - auth_network
+  redis:
+    image: redis:7-alpine
+    container_name: auth_redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    networks:
+      - auth_network
+    volumes:
+      - redis_data:/data
+
+  auth_service:
+    build: ./app
+    image: auth_service
+    container_name: auth_service
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - auth_network
+      - shared_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  auth_db_data:
+  redis_data:
+    driver: local
+
+networks:
+  auth_network:
+    driver: bridge
+  shared_network:
+    external:
+      name: shared_network

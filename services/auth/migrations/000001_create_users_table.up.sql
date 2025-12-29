@@ -1,0 +1,6 @@
+CREATE TABLE users (
+    uid SERIAL PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    password BYTEA NOT NULL,
+    is_admin BOOLEAN DEFAULT FALSE
+);

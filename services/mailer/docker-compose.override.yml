@@ -1,0 +1,27 @@
+# Этот файл необходим для привязки портов в режиме разработки.
+# Это связано с тем, как директива `ports` объединяется из двух файлов.
+#
+# Этот файл автоматически подхватывается в режиме разработки командой:
+#
+#  $ docker compose up
+
+services:
+  mailer:
+    volumes:
+      # Монтируем исходный код только в режиме разработки:
+      - ./app:/mailer/app
+      - ./internal:/mailer/internal
+      - ./template:/mailer/template
+      - ./config:/mailer/config
+    build:
+      # Необходимо для исправления прав доступа к файлам, созданным Docker
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    external:
+      name: shared_network

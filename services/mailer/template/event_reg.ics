@@ -1,0 +1,14 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Event Finder//Mail Service//EN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:{{.Id}}@event-finder.ru
+DTSTAMP:{{.CreateTime}}
+DTSTART:{{.StartTime}}
+DTEND:{{.EndTime}}
+SUMMARY:{{.Name}}
+DESCRIPTION:{{.Description}}
+LOCATION:{{.Region}}
+END:VEVENT
+END:VCALENDAR

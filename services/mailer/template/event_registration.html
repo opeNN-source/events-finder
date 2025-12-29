@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Уведомление о регистрации</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333333;
+            font-size: 24px;
+        }
+
+        p {
+            color: #555555;
+            font-size: 16px;
+        }
+
+        .event-details {
+            margin-top: 20px;
+            border-top: 1px solid #eeeeee;
+            padding-top: 10px;
+        }
+
+        .event-details dt {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .event-details dd {
+            margin: 0 0 10px 0;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #999999;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Регистрация на событие успешна!</h1>
+        <p>Вы успешно зарегистрировались на следующее событие:</p>
+        <dl class="event-details">
+            <dt>Название события:</dt>
+            <dd>{{ .Name }}</dd>
+
+            <dt>Формат:</dt>
+            <dd>{{ .Format }}</dd>
+
+            <dt>Регион:</dt>
+            <dd>{{ .Region }}</dd>
+
+            <dt>Категория:</dt>
+            <dd>{{ .Category }}</dd>
+
+            <dt>Тип события:</dt>
+            <dd>{{ .Type }}</dd>
+
+            <dt>Дата начала:</dt>
+            <dd>{{ formatDateTime .StartTime }}</dd>
+
+            <dt>Дата конца:</dt>
+            <dd>{{ formatDateTime .EndTime }}</dd>
+        </dl>
+        <p>Спасибо за вашу регистрацию. Ждем вас на мероприятии!</p>
+        <div class="footer">
+            &copy; 2025 Ваш сервис уведомлений
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,31 @@
+services:
+  mailer:
+    <<: &mailer
+      image: "mailer:dev"
+      build:
+        target: development_build
+        context: .
+        dockerfile: ./docker/Dockerfile
+        args:
+          MAILER_ENV: development
+        cache_from:
+          - "mailer:dev"
+          - "mailer:latest"
+          - "*"
+
+      env_file: ./config/.env
+
+    command: ["./mailer"]
+    healthcheck:
+      test: /bin/sh /mailer/docker/healthcheck.sh
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    external:
+      name: shared_network
