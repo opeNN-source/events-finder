@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package mailer;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "/gen/mailerpb";
+
+service EmailService {
+  rpc SendRegistrationNotification(RegistrationRequest) returns (EmailResponse);
+}
+
+message EmailEvent {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  string format = 4;
+  string region = 5;
+  string category = 6;
+  string type = 7;
+
+  google.protobuf.Timestamp start_time = 8;
+  google.protobuf.Timestamp end_time = 9;
+}
+
+message RegistrationRequest {
+  string to = 1;
+  repeated EmailEvent events = 2;
+}
+
+message EmailResponse {
+  bool ok = 1;
+  string error = 2;
+}

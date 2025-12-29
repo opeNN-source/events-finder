@@ -1,0 +1,261 @@
+#### joe made this: https://goel.io/joe
+
+# Руководство по стилю Git:
+# https://github.com/agis-/git-style-guide
+
+#####=== OSX ===#####
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Иконка должна заканчиваться двумя \r
+Icon
+
+
+# Thumbnails
+._*
+
+# Файлы, которые могут появиться на внешнем диске
+.Spotlight-V100
+.Trashes
+
+# Директории, потенциально созданные на удаленном AFP ресурсе
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+#####=== Windows ===#####
+# Кэш файлов изображений Windows
+Thumbs.db
+ehthumbs.db
+
+# Файл конфига папки
+Desktop.ini
+
+# Корзина, используемая на общих ресурсах
+$RECYCLE.BIN/
+
+# Файлы установщика Windows
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Ярлыки Windows
+*.lnk
+
+#####=== Python ===#####
+
+# Скомпилированные / оптимизированные / DLL файлы
+__pycache__/
+*.py[cod]
+
+# C библиотеки
+*.so
+
+# Distribution / packaging
+.Python
+env/
+develop-eggs/
+dist/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+#  Обычно эти файлы записываются python скриптом из шаблона
+#  перед тем как PyInstaller создает exe, чтобы внедрить дату/другую информацию.
+*.manifest
+*.spec
+
+# Логи инсталлера
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Юнит-тесты / покрытие
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Переводы
+*.mo
+*.pot
+
+# Логи:
+*.log
+
+# Документация Sphinx
+docs/_build/
+
+# PyBuilder
+target/
+
+#####=== Sass ===#####
+
+.sass-cache
+*.css.map
+
+#####=== Yeoman ===#####
+
+node_modules/
+bower_components/
+*.log
+
+build/
+dist/
+
+#####=== Vagrant ===#####
+.vagrant/
+
+#####=== Node ===#####
+
+# Логи
+logs
+*.log
+
+# Runtime данные
+pids
+*.pid
+*.seed
+
+# Директория для либ, созданных jscoverage/JSCover
+lib-cov
+
+# Директория покрытия, используемая либой istanbul
+coverage
+
+# Промежуточное хранилище Grunt (http://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Конфигурация node-waf
+.lock-wscript
+
+# Бинарники (http://nodejs.org/api/addons.html)
+build/Release
+
+# Зависимости
+# https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git-
+node_modules
+
+# Логи npm
+npm-debug.log
+
+#### jetbrains ####
+# JetBrains IDE: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio и Webstorm
+# Справка: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+
+# Пользовательские настройки:
+# .idea/**/workspace.xml
+# .idea/**/tasks.xml
+# .idea/dictionaries
+
+# # Sensitive or high-churn files:
+# .idea/**/dataSources/
+# .idea/**/dataSources.ids
+# .idea/**/dataSources.xml
+# .idea/**/dataSources.local.xml
+# .idea/**/sqlDataSources.xml
+# .idea/**/dynamic.xml
+# .idea/**/uiDesigner.xml
+
+# # Gradle:
+# .idea/**/gradle.xml
+# .idea/**/libraries
+
+# # Плагин Mongo Explorer:
+# .idea/**/mongoSettings.xml
+
+# # Плагин Cursive Clojure
+# .idea/replstate.xml
+
+# Полностью ограничить папку `.idea/`:
+.idea/
+
+# CMake
+cmake-build-debug/
+
+## Формат проекта на основе файлов:
+*.iws
+
+## Файлы, специфичные для плагинов:
+
+# IntelliJ
+/out/
+
+# Плагин mpeltonen/sbt-idea
+.idea_modules/
+
+# Плагин JIRA
+atlassian-ide-plugin.xml
+
+# Плагин Crashlytics (для Android Studio и IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+
+#####=== Custom ===#####
+# Директории:
+media/
+.static/
+/static/
+
+# Типы файлов:
+*.sqlite3
+*.db
+
+# Конфигурационные файлы:
+*.env
+.env
+
+# Локальные файлы настроек:
+*local.py
+
+# Файлы деплоя для Docker:
+docker-compose.deploy.yml
+
+# Сертификаты:
+docker/caddy/certs/
+
+# Артефакты:
+.gitlab/.svn/
+artifacts/
+
+# mypy:
+.mypy_cache/
+
+# pytest и hypothesis
+.pytest_cache/
+.hypothesis/
+
+# ipython:
+.ipython/
+.python_history
+
+# bash history:
+.bash_history
+
+# ruff:
+.ruff_cache/
+
+# import-linter:
+.import_linter_cache/
+
+# safety:
+.safety/
+
+# mock database data
+mock_data.sql

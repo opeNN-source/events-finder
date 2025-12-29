@@ -1,0 +1,72 @@
+---
+# Основной compose-файл для разработки.
+# Должен использоваться напрямую в режиме разработки.
+# Автоматически загружает `docker-compose.override.yml`, если он существует.
+# Дополнительных шагов не требуется.
+
+services:
+  db:
+    image: "postgres:18-alpine"
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/create_dev_database.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - postgres-net
+    env_file: ./config/.env
+    healthcheck:
+      test: pg_isready
+      interval: 5s
+      timeout: 30s
+      retries: 5
+      start_period: 5s
+
+  server:
+    <<: &server
+      image: "server:dev"
+      build:
+        target: development_build
+        context: .
+        dockerfile: ./docker/Dockerfile
+        args:
+          SERVER_ENV: development
+        cache_from:
+          - "server:dev"
+          - "server:latest"
+          - "*"
+
+      depends_on:
+        db:
+          condition: service_healthy
+      networks:
+        - server-net
+        - postgres-net
+        - shared_network
+      env_file: ./config/.env
+      environment:
+        POSTGRES_HOST: db
+
+    command: python3 -m server
+    healthcheck:
+      test: /bin/sh /server/docker/healthcheck.sh
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+# Этот task - пример того, как расширить существующие:
+#   some_worker:
+#     <<: *server
+#     command: uv run python -m server.worker
+
+networks:
+  # Сеть для postgres, только у server должен быть доступ к БД:
+  postgres-net:
+  # Сеть для внутренних сервисов, используйте её по умолчанию:
+  server-net:
+  shared_network:
+    external:
+      name: shared_network
+
+volumes:
+  postgres-data:
