@@ -86,6 +86,19 @@ CREATE TABLE IF NOT EXISTS events (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS agent_configs ( 
+    id BIGSERIAL PRIMARY KEY,
+
+    locations JSON,
+    event_types JSON,
+    sources JSON,
+    honorary_participants JSON,
+    custom_queries JSON,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Индексы для таблицы events
 CREATE INDEX IF NOT EXISTS idx_events_date_start ON events(date_start);
 CREATE INDEX IF NOT EXISTS idx_events_category ON events(category_id);
