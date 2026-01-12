@@ -65,7 +65,7 @@ async def search_events(
 
     if price_max is not None:
         filters.append(models.Event.price <= price_max)
-    print(filters)
+
     objects = await events_service.list(
         *filters,
         auto_expunge=True,
