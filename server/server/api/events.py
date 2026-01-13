@@ -2,6 +2,7 @@ import typing
 from datetime import datetime
 
 import litestar
+from litestar.params import Parameter
 from sqlalchemy import and_, orm
 
 from server import models, repositories, schemas
@@ -9,11 +10,11 @@ from server import models, repositories, schemas
 
 @litestar.get('/search')
 async def search_events(
-    events_service: repositories.EventsService,
-    category: str | None = None,
-    region: str | None = None,
-    format: str | None = None,
-    event_type: str | None = None,
+    events_service: repositories.EventsService, 
+    category: typing.List[str] = Parameter(required=False, default=()),
+    region: typing.List[str] = Parameter(required=False, default=()),
+    format: typing.List[str] = Parameter(required=False, default=()),
+    event_type: typing.List[str] = Parameter(required=False, default=()),
     name: str | None = None,
     date_start: datetime | None = None,
     date_end: datetime | None = None,
@@ -38,17 +39,17 @@ async def search_events(
     """
     filters = []
 
-    if category is not None:
-        filters.append(models.Event.category.has(models.Category.name == category))
+    if len(category) != 0 :
+        filters.append(models.Event.category.has(models.Category.name.in_(category)))
 
-    if region is not None:
-        filters.append(models.Event.region.has(models.Region.name == region))
+    if len(region) != 0:
+        filters.append(models.Event.region.has(models.Region.name.in_(region)))
 
-    if format is not None:
-        filters.append(models.Event.format.has(models.Format.name == format))
+    if len(format) != 0:
+        filters.append(models.Event.format.has(models.Format.name.in_(format)))
 
-    if event_type is not None:
-        filters.append(models.Event.event_type.has(models.EventType.name == event_type))
+    if len(event_type) != 0:
+        filters.append(models.Event.event_type.has(models.EventType.name.in_(event_type)))
 
     if name is not None:
         filters.append(models.Event.name.ilike(f'%{name}%'))

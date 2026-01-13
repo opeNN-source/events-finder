@@ -9,7 +9,7 @@ services:
     image: "postgres:18-alpine"
     restart: unless-stopped
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
       - ./scripts/create_dev_database.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     networks:
       - postgres-net
