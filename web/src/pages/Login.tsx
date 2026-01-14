@@ -1,6 +1,6 @@
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { useTheme } from '@mui/material/styles';
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate } from "react-router";
 import { AxiosError } from 'axios';
 import { useState } from 'react';
 import { authAPI } from '../services/api';
@@ -19,7 +19,6 @@ import {
 
 export default function Login() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [error, setError] = useState<string>('');
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -28,8 +27,6 @@ export default function Login() {
   const [password, setPassword] = useState<string>('');
 
   const theme = useTheme();
-
-  const from = location.state?.from?.pathname || '/events';
 
   const handleAuth = async (email: string, password: string) => {
     setIsLoading(true);
@@ -49,7 +46,7 @@ export default function Login() {
 
         saveAuthData({ access, refresh }, email);
 
-        navigate(from, { replace: true });
+        navigate('/events', { replace: true });
       }
     } catch (err: unknown) {
       const error = err as AxiosError;

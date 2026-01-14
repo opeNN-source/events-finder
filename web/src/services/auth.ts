@@ -17,12 +17,10 @@ export interface LoginCredentials {
 export const saveAuthData = (tokens: AuthTokens, email: string): void => {
   Cookies.set(ACCESS_TOKEN_KEY, tokens.access, {
     expires: 1,
-    secure: true,
     sameSite: 'strict'
   });
   Cookies.set(REFRESH_TOKEN_KEY, tokens.refresh, {
     expires: 7,
-    secure: true,
     sameSite: 'strict'
   });
 
