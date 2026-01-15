@@ -60,6 +60,9 @@ export interface Config {
   locations: string[];
   event_types: string[];
   sources: string[];
-  honorary_participants: string[];
+  honorary_participants: {
+    GR: string[];
+    Business: string[];
+  };
   custom_queries: string[];
 }
