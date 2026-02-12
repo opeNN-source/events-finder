@@ -5,7 +5,7 @@ from typing import List , Optional
 
 class EventType(BaseModel):
     name: str = Field(
-        description="Формат мероприятия. Примеры: Онлайн, Офлайн, Смешанный"
+        description="Тип проводимого мероприятия. Примеры: Конференция, Воркшоп, Митап, Вебинар, Конкурс, Форум, Саммит, Хакатон, Фестиваль"
     )
 
     description: str = Field(
@@ -14,7 +14,7 @@ class EventType(BaseModel):
 
 class Format(BaseModel):
     name: str = Field(
-        description="Название типа проводимого мероприятия. Примеры: Форум, Симпозиум, Круглый стол, Мастер-класс, Тренинг, Вебинар, Workshop, Конгресс, Выставка, Конкурс, Нетворкинг-сессия, Панельная дискуссия, Кампус/лагерь, Лекция"
+        description="Формат проведения мероприятия. Примеры: Онлайн, Офлайн, Гибрид"
     )
 
     description: str = Field(

@@ -19,9 +19,9 @@ class Settings(BaseSettings):
     log_format: str = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | {message}"
     log_level: str = 'DEBUG'
 
-    postgres_name: str = 'server'  
-    postgres_user: str = 'server' 
-    postgres_password: str = 'server' 
+    postgres_name: str = 'server'
+    postgres_user: str = 'server'
+    postgres_password: str = 'server'
     postgres_host: str = '0.0.0.0'
     postgres_port: int = 5012
     postgres_pool_size: int = 5
@@ -34,14 +34,14 @@ class Settings(BaseSettings):
             f"postgresql+asyncpg://{self.postgres_name}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_name}"
         )
-    
+
     @property
     def db_dsn_parsed(self) -> URL:
         return make_url(self.db_dsn)
 
     gigachat_api_key: str = ''
     gigachat_scope: str = 'GIGACHAT_API_PERS'
-    gigachat_model: str = 'GigaChat-2'
+    gigachat_model: str = 'GigaChat-2-Max'
     gigachat_timeout: int = 10 
     prompt_dir: str = 'prompt'
 

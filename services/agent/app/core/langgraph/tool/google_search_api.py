@@ -47,7 +47,6 @@ class GoogleSearchApi(BaseTool):
                 })
 
         logger.debug('\n' + json.dumps(results, indent=4, ensure_ascii=False))
-        print(results)
         return results
 
 
@@ -67,5 +66,3 @@ async def search_req_retry(params: Dict[str, str]) -> Any:
 
 
 search = GoogleSearchApi()
-print(search.get_input_jsonschema())
-# asyncio.run(search._arun(["IT мероприятия"]))

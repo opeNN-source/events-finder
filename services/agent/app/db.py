@@ -2,7 +2,7 @@ import logging
 import typing
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine, create_async_engine, AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 import app.repository as repo
 from app.setting import settings
@@ -102,38 +102,42 @@ class Database:
 
             for e in events:
                 category = await category_repo.get_one_or_none(
-                    model.Category.name == e.category,
+                    func.lower(model.Category.name) == e.category.lower(),
         
                     auto_expunge=True,
                 )
 
                 if category is None:
+                    logger.warning(f"категория не найдена: '{e.category}', пропуск: {e.name}")
                     continue
 
                 format = await format_repo.get_one_or_none(
-                    model.Format.name == e.event_format.name,
+                    func.lower(model.Format.name) == e.event_format.name.lower(),
 
                     auto_expunge=True,
                 )
 
                 if format is None:
+                    logger.warning(f"формат не найден: '{e.event_format.name}', пропуск: {e.name}")
                     continue
 
                 event_type = await event_type_repo.get_one_or_none(
-                    model.EventType.name == e.event_type.name,
+                    func.lower(model.EventType.name) == e.event_type.name.lower(),
 
                     auto_expunge=True
                 )
 
                 if event_type is None:
+                    logger.warning(f"тип события не найден: '{e.event_type.name}', пропуск: {e.name}")
                     continue
 
                 region = await region_repo.get_one_or_none(
-                    model.Region.name == e.region,
+                    func.lower(model.Region.name) == e.region.lower(),
                     auto_expunge=True,
                 )
 
                 if region is None:
+                    logger.warning(f"регион не найден: '{e.region}', пропуск: {e.name}")
                     continue
 
                 e_model = EventModel(
