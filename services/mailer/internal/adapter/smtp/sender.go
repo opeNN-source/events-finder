@@ -17,6 +17,10 @@ import (
 	"github.com/s21-nn-developers/mailer/internal/utils"
 )
 
+var (
+	RegSubject = "Приглашение на событие"
+)
+
 type Config struct {
 	Host     string `envconfig:"SMTP_HOST" required:"true"`
 	Port     int    `envconfig:"SMTP_PORT" default:"587"`
@@ -33,9 +37,13 @@ type Config struct {
 	QueueSize   int           `envconfig:"SMTP_JOBS_QUEUE_SIZE" default:"10"`
 }
 
+type renderer interface {
+	Render(name, tplName string, data any) (string, error)
+}
+
 type MailSender struct {
 	cfg      Config
-	template domain.Renderer
+	template renderer
 	logger   *slog.Logger
 
 	pool *workerPool
@@ -43,7 +51,7 @@ type MailSender struct {
 
 func NewSMTP(
 	c Config,
-	template domain.Renderer,
+	template renderer,
 	wPool *workerPool,
 	logger *slog.Logger,
 ) *MailSender {
@@ -65,11 +73,15 @@ func (m MailSender) SendRegEvent(to string, eventsData []domain.Event) error {
 	)
 
 	for _, eData := range eventsData {
-		html, err := m.template.Render(domain.RegHtmlFilename, eData)
+		html, err := m.template.Render(
+			templates.RegHtmlFilename,
+			templates.TplHtmlName,
+			eData,
+		)
 		if err != nil {
 			m.logger.Error(
 				"SMTP: render html err",
-				"filename", domain.RegHtmlFilename,
+				"filename", templates.RegHtmlFilename,
 			)
 
 			return err
@@ -90,11 +102,15 @@ func (m MailSender) SendRegEvent(to string, eventsData []domain.Event) error {
 			eData.EndTime.UTC().Format(timeFormat),
 		)
 
-		ics, err := m.template.Render(domain.RegIcsFilename, eventIcs)
+		ics, err := m.template.Render(
+			templates.RegIcsFilename,
+			templates.TplIcsName,
+			eventIcs,
+		)
 		if err != nil {
 			m.logger.Error(
 				"SMTP: render ics err",
-				"filename", domain.RegIcsFilename,
+				"filename", templates.RegIcsFilename,
 			)
 
 			return err
@@ -103,12 +119,12 @@ func (m MailSender) SendRegEvent(to string, eventsData []domain.Event) error {
 		body := utils.TemporaryHtmlAndIcsEmail(
 			m.cfg.From,
 			to,
-			domain.RegSubject,
+			RegSubject,
 			html,
 			ics,
 		)
 
-		m.pool.submit(newSendJob(to, domain.RegSubject, addr, auth, body))
+		m.pool.submit(newSendJob(to, RegSubject, addr, auth, body))
 	}
 
 	return nil
@@ -174,12 +190,10 @@ func isRetryableSMTPError(err error) bool {
 		return false
 	}
 
-	// Потеря соединения
 	if errors.Is(err, io.EOF) {
 		return true
 	}
 
-	// таймаут
 	var netErr net.Error
 	if errors.As(err, &netErr) && netErr.Timeout() {
 		return true
@@ -195,7 +209,6 @@ func isRetryableSMTPError(err error) bool {
 		return true
 	}
 
-	// 4xx SMTP ошибки (сервер перегружен, попробуйте позже)
 	if strings.Contains(err.Error(), "4") {
 		return true
 	}

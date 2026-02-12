@@ -6,12 +6,16 @@ import (
 	"github.com/s21-nn-developers/mailer/internal/domain"
 )
 
+type mailer interface {
+	SendRegEvent(to string, eventData []domain.Event) error
+}
+
 type MailUsecase struct {
-	mailServer domain.Mailer
+	mailServer mailer
 	logger     *slog.Logger
 }
 
-func NewMailUsecase(sender domain.Mailer, logger *slog.Logger) MailUsecase {
+func NewMailUsecase(sender mailer, logger *slog.Logger) MailUsecase {
 	return MailUsecase{
 		mailServer: sender,
 		logger:     logger,
