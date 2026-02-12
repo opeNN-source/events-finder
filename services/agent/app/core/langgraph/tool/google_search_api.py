@@ -19,10 +19,14 @@ class GoogleSearchApi(BaseTool):
     name: str = "GoogleSearch"
     description: str = "Выполняет поиск в Google по запросу и возвращает результаты"
 
-    def _run(self, *args, **kwargs):
-        raise NotImplementedError("Этот tool поддерживает только async вызовы.")
+
+    #TODO: у
+    def _run(self, queries: List[str]) -> List[Dict[str, str]]:
+        
+        return [{'aboba': 'aasdf'}]
 
     async def _arun(self, queries: List[str]) -> List[Dict[str, str]]:
+
         logger.info(f"Запуск GoogleSearchApi tool с queries: {queries}")
         results: List[Dict[str, str]] = []
 
@@ -43,15 +47,14 @@ class GoogleSearchApi(BaseTool):
                 })
 
         logger.debug('\n' + json.dumps(results, indent=4, ensure_ascii=False))
-        print(results[:1])
-        return results[:1]
+        print(results)
+        return results
 
 
 async def search_req_retry(params: Dict[str, str]) -> Any:
     for attempt in range(settings.search_atempts):
         logger.debug(f"Попытка подключения к GSA номер {attempt + 1}")
         try:
-            logger.info(f"GET запрос по query: {params['q']}")
             res = await client.get(url=settings.search_url, params=params)
             res.raise_for_status()
         except (HTTPStatusError, RequestError) as e:
@@ -64,5 +67,5 @@ async def search_req_retry(params: Dict[str, str]) -> Any:
 
 
 search = GoogleSearchApi()
-
+print(search.get_input_jsonschema())
 # asyncio.run(search._arun(["IT мероприятия"]))

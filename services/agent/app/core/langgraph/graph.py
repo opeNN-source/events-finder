@@ -1,49 +1,23 @@
 from app.service.llm import llm_service
-from tool import tools
+from app.core.langgraph.tool import tools
 from app.logger import logger
-from app.setting import settings
 from langgraph.graph.state import CompiledStateGraph
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph
 from app.schemas.graph import AgentState
 from langchain_core.messages import SystemMessage, HumanMessage
 from typing import List, cast
 import requests
-from bs4 import BeautifulSoup
-from app.domain.event import EventSchema, ParsingResult
+
+from langchain_core.runnables import RunnableConfig
+
+from langchain.agents import initialize_agent, AgentType
+from langchain.prompts import ChatPromptTemplate
+
+from app.schemas.event import EventSchema, ParsingResult
 from typing import Optional
 import urllib.parse
-import asyncio
-import re
-
-URL_RE = re.compile(
-    r"https?://[^\s\"'<>]+", re.IGNORECASE
-)
-
-def extract_urls_from_text(text: str) -> List[str]:
-    """Извлекаем candidate URLs регексом и фильтруем."""
-    found = URL_RE.findall(text)
-    # Убираем треилящие знаки
-    cleaned = [u.rstrip(").,;\"'") for u in found]
-    return cleaned
-
-def normalize_and_join(base: str, href: str) -> Optional[str]:
-    try:
-        full = urllib.parse.urljoin(base, href)
-        parsed = urllib.parse.urlparse(full)
-        if parsed.scheme not in ("http", "https"):
-            return None
-        return full
-    except Exception:
-        return None
-
-def is_relevant_url(url: str) -> bool:
-    bad_ext = (".jpg", ".jpeg", ".png", ".gif", ".pdf", ".zip", ".rar", ".svg")
-    lower = url.lower()
-    if any(lower.endswith(ext) for ext in bad_ext):
-        return False
-    # можно добавить дополнительные фильтры по доменам/паттернам
-    return True
-
+from app.core.langgraph.tool.google_search_api import search
+import json
 
 
 class LangGraphAgent:
@@ -58,31 +32,29 @@ class LangGraphAgent:
     def create_graph(self) -> CompiledStateGraph:
         graph_builder = StateGraph(AgentState)
 
-        graph_builder.add_node("req search", self._create_search_request)
+        graph_builder.add_node("req_search", self._create_search_request)
         graph_builder.add_node("search_api", self._request_search_api)
         graph_builder.add_node("parse_html", self._parse_html)
 
-        # правильный порядок
-        graph_builder.set_entry_point('req search')
-        graph_builder.add_edge('req search', 'search_api')
-        graph_builder.add_edge('search_api', 'parse_html')
+        graph_builder.set_entry_point("req_search")
+        graph_builder.add_edge('req_search', 'search_api')
+        # graph_builder.add_edge('search_api', 'parse_html')
 
-        # цикл парсинга
-        graph_builder.add_conditional_edges(
-            'parse_html',
-            self._condition_parse,
-            {
-                'next': 'parse_html',
-                'end': END
-            }
-        )
+        # graph_builder.add_conditional_edges(
+        #     'parse_html',
+        #     self._condition_parse,
+        #     {
+        #         'next': 'parse_html',
+        #         'end': END
+        #     }
+        # )
 
         graph = graph_builder.compile()
         return graph
     
     def _create_search_request(self, state: AgentState) -> AgentState:
-        for domain in state.filter.get('domain', []):
-            for location in state.filter.get('location', []):
+        for domain in state.filter.category:
+            for location in state.filter.locations:
                 q = f"{domain} мероприятия {location}"
 
                 state.search_requests.append(q)
@@ -96,66 +68,35 @@ class LangGraphAgent:
     async def _request_search_api(self, state: AgentState) -> AgentState:
         if not state.search_requests:
             return state
+        print(state.search_requests)
+        # llm_url_schema = self.llm_service._llm.with_structured_output(UrlSchema)
 
         try: 
-            response = await self.llm_service._llm_tools.ainvoke(
-                [
-                    SystemMessage(
-                        "Ты AI помощник агента, который использует GoogleSearch** для получения ссылок по запросам. \
-                    Ты должен: \
-                        1. Искать только ссылки, релевантные описанию/фильтрам запроса. \
-                        2. Убирать дубликаты ссылок. \
-                        3. Отдавать результат в виде списка уникальных полных URL без лишнего текста. \
-                        4. Игнорировать нерелевантные сайты и посторонние материалы. \
-                        Формат вывода — только список ссылок, по одной на строку, без дополнительных комментариев."
-                    ),
+            # response = await self.llm_service._llm_tools.ainvoke(
+            #     [
+            #         SystemMessage(
+            #             "Ты AI помощник агента, который использует GoogleSearch** для получения ссылок по запросам. \
+            #         Ты должен: \
+            #             1. Искать только ссылки, релевантные описанию/фильтрам запроса. \
+            #             2. Убирать дубликаты ссылок. \
+            #             3. Отдавать результат в виде списка уникальных полных URL без лишнего текста. \
+            #             4. Игнорировать нерелевантные сайты и посторонние материалы. \
+            #             Формат вывода — только список ссылок, по одной на строку, без дополнительных комментариев."
+            #         ),
 
-                    HumanMessage("Мне нужны ссылки которые ведут на меропирятия. Используй search tool для получения ссылок для парсинга" + ' '.join(state.search_requests))
-                ]
-            )
+            #         HumanMessage("Мне нужны ссылки которые ведут на меропирятия. Используй search tool для получения ссылок для парсинга" + ' '.join(state.search_requests))
+            #     ]
+            # )
+            resp = await search._arun(state.search_requests[:1])
+
+            
+
+            logger.info(resp)
+
         except Exception as exc:
             logger.warning(f"LLM search error: {exc}")
             return state
         
-        content = getattr(response, "content", None)
-        urls: List[str] = []
-        if isinstance(content, str):
-            # сначала извлекаем явные ссылки из ответа регексом
-            urls.extend(extract_urls_from_text(content))
-            # если нет ссылок, пробуем взять любые строки, которые выглядят как ссылки
-            if not urls:
-                for line in content.splitlines():
-                    line = line.strip()
-                    if line.startswith("http"):
-                        urls.append(line)
-        else:
-            # Если модель вернула структуру - попытка привести к строкам
-            try:
-                textified = str(content)
-                urls.extend(extract_urls_from_text(textified))
-            except Exception:
-                pass
-
-        # Нормализуем, дедуплицируем и добавляем в очередь
-        added = 0
-        for u in urls:
-            if added >= self.max_new_per_page:
-                break
-            # если урл относительный — пропускаем (нет базового) — это search response
-            if not u.lower().startswith(("http://", "https://")):
-                continue
-            if not is_relevant_url(u):
-                continue
-            if u in state.visited:
-                continue
-            if u in state.urls:
-                continue
-            if len(state.urls) + added >= self.max_queue:
-                break
-            state.urls.append((u, 0))
-            added += 1
-
-        logger.info(f"Добавлено {added} урлов из LLM")
         return state
     
     def _condition_parse(self, state: AgentState) -> str:
@@ -187,7 +128,6 @@ class LangGraphAgent:
                     HumanMessage("Вот чанки текста:\n\n" + "\n\n".join(chunks))
                 ]
             )
-
             return cast(ParsingResult, result).events
         except Exception as exc:
             logger.warning(f"Ошибка при структурированном выводе LLM: {exc}")
@@ -265,25 +205,7 @@ class LangGraphAgent:
 
         return state
 
-agent = LangGraphAgent()
 
-graph = agent.create_graph()
 
-state = AgentState(
-    filter={
-        "domain": ["IT", "Бизнес"],
-        "location": ["Нижний Новгород"]
-        },
-    search_requests=[],
-    urls=[],       
-    site_chunk=[],
-    parsed_events=[],
-    visited=set(),
-    failed_urls=[],
-    max_depth=2
-)
-
-res = asyncio.run(graph.ainvoke(state))
-
-print(res)
+graph = LangGraphAgent().create_graph()
 

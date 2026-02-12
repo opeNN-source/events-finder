@@ -91,3 +91,24 @@ class ParsingResult(BaseModel):
     извлечения и хранения всей информации о найденных в интернете IT-мероприятиях.
     """
     events: List[EventSchema] = Field(default=[], description="Список всех найденных уникальных мероприятий, где каждое мероприятие уже содержит вложенные данные о спикерах, компаниях и источнике.")
+
+class EventModel(BaseModel):
+    name: str
+    descripteion: str
+
+    date_start: date
+    date_end: date
+
+    time_start: time
+    time_end: time
+
+    format_id: int
+    region_id: int
+    category_id: int
+    event_type_id: int
+    
+    price: float
+
+    source_url: str
+    
+    organizer_name: str
