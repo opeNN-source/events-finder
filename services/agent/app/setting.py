@@ -41,8 +41,8 @@ class Settings(BaseSettings):
 
     gigachat_api_key: str = ''
     gigachat_scope: str = 'GIGACHAT_API_PERS'
-    gigachat_model: str = 'GigaChat-2-Max'
-    gigachat_timeout: int = 10 
+    gigachat_model: str = 'GigaChat-2'
+    gigachat_timeout: int = 60
     prompt_dir: str = 'prompt'
 
     search_api_key: str = ''

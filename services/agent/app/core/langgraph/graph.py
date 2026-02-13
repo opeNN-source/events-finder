@@ -10,6 +10,7 @@ from typing import List, cast
 import httpx
 import certifi
 import trafilatura
+import datetime
 
 from langchain_core.runnables import RunnableConfig
 from langchain.prompts import ChatPromptTemplate
@@ -17,11 +18,14 @@ from langchain.prompts import ChatPromptTemplate
 from app.schemas.event import EventSchema, ParsingResult
 from typing import Optional
 import urllib.parse
-from app.core.langgraph.tool.google_search_api import search
+from app.core.langgraph.tool.duckduckgo_search import search
 import json
+from pathlib import Path
 
 
 _http_client = httpx.AsyncClient(timeout=15, verify=certifi.where())
+
+EVENTS_JSON_PATH = Path("events_output.json")
 
 
 class LangGraphAgent:
@@ -162,6 +166,7 @@ class LangGraphAgent:
         if parsed_events and isinstance(parsed_events, list):
             state.parsed_events.extend(parsed_events)
             logger.info(f"извлечено {len(parsed_events)} мероприятий из {url}")
+            self._save_events_json(parsed_events)
             if self.db:
                 try:
                     await self.db.insert_events(parsed_events)
@@ -182,7 +187,12 @@ class LangGraphAgent:
         return 'end'
 
     def extract_event_data(self, text: str, url: str) -> Optional[List[EventSchema]]:
-        extract_prompt = prompts.get_prompt("extract_events.md").replace("{source_url}", url)
+        today = datetime.date.today().isoformat()
+        extract_prompt = (
+            prompts.get_prompt("extract_events.md")
+            .replace("{source_url}", url)
+            .replace("{today_date}", today)
+        )
         llm = self.llm_service._llm.with_structured_output(ParsingResult)
 
         try:
@@ -202,6 +212,24 @@ class LangGraphAgent:
         if url.lower().endswith(bad_ext):
             return False
         return True
+
+    def _save_events_json(self, events: List[EventSchema]) -> None:
+        """Сохраняет все найденные мероприятия в JSON-файл."""
+        existing = []
+        if EVENTS_JSON_PATH.exists():
+            try:
+                existing = json.loads(EVENTS_JSON_PATH.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                existing = []
+
+        new_items = [e.model_dump(mode="json") for e in events]
+        existing.extend(new_items)
+
+        EVENTS_JSON_PATH.write_text(
+            json.dumps(existing, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        logger.info(f"сохранено {len(new_items)} мероприятий в {EVENTS_JSON_PATH} (всего: {len(existing)})")
 
     def _extract_aggregator_links(self, html: str, base_url: str) -> List[str]:
         """Извлекает ссылки на мероприятия со страницы-агрегатора."""

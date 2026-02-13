@@ -112,23 +112,23 @@ class Database:
                     continue
 
                 format = await format_repo.get_one_or_none(
-                    func.lower(model.Format.name) == e.event_format.name.lower(),
+                    func.lower(model.Format.name) == e.event_format.lower(),
 
                     auto_expunge=True,
                 )
 
                 if format is None:
-                    logger.warning(f"формат не найден: '{e.event_format.name}', пропуск: {e.name}")
+                    logger.warning(f"формат не найден: '{e.event_format}', пропуск: {e.name}")
                     continue
 
                 event_type = await event_type_repo.get_one_or_none(
-                    func.lower(model.EventType.name) == e.event_type.name.lower(),
+                    func.lower(model.EventType.name) == e.event_type.lower(),
 
                     auto_expunge=True
                 )
 
                 if event_type is None:
-                    logger.warning(f"тип события не найден: '{e.event_type.name}', пропуск: {e.name}")
+                    logger.warning(f"тип события не найден: '{e.event_type}', пропуск: {e.name}")
                     continue
 
                 region = await region_repo.get_one_or_none(

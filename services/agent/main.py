@@ -4,7 +4,7 @@ from app.db import Database
 
 from app.setting import settings
 
-from app.schemas.event import EventSchema, Format, EventType
+from app.schemas.event import EventSchema
 from app.schemas.graph import AgentState
 from app.setting import settings
 import datetime
@@ -41,7 +41,7 @@ async def main():
     except Exception as exc:
         print(f"Граф завершён с ошибкой: {exc}")
 
-    await db.dispose
+    await db.dispose()
 
 
 if __name__ == '__main__':

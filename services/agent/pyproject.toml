@@ -8,6 +8,7 @@ dependencies = [
     "advanced-alchemy>=1.8.2",
     "asyncpg>=0.31.0",
     "certifi>=2025.11.12",
+    "ddgs>=9.10.0",
     "googleapis-common-protos>=1.72.0",
     "grpcio>=1.76.0",
     "grpcio-tools>=1.76.0",
