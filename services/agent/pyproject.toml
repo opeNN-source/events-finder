@@ -5,15 +5,21 @@ description = "AI-агент для поиска, фильтрации и стр
 readme = "README.md"
 requires-python = "==3.13.5"
 dependencies = [
+    "advanced-alchemy>=1.8.2",
+    "asyncpg>=0.31.0",
     "certifi>=2025.11.12",
+    "ddgs>=9.10.0",
     "googleapis-common-protos>=1.72.0",
     "grpcio>=1.76.0",
     "grpcio-tools>=1.76.0",
     "httpx>=0.28.1",
+    "langchain>=0.3.27",
     "langchain-gigachat>=0.3.12",
     "langgraph>=0.2,<0.3",
     "loguru>=0.7.3",
     "pydantic-settings>=2.12.0",
+    "sqlalchemy>=2.0.46",
+    "trafilatura>=2.0.0",
 ]
 
 [build-system]

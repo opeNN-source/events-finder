@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Уведомление о регистрации</title>
+    <title>Приглашение на событие</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -57,8 +57,10 @@
 
 <body>
     <div class="container">
-        <h1>Регистрация на событие успешна!</h1>
-        <p>Вы успешно зарегистрировались на следующее событие:</p>
+        <h1>Приглашаем на событие!</h1>
+
+        <p>Приглашаем вас на мероприятие:</p>
+
         <dl class="event-details">
             <dt>Название события:</dt>
             <dd>{{ .Name }}</dd>
@@ -78,13 +80,12 @@
             <dt>Дата начала:</dt>
             <dd>{{ formatDateTime .StartTime }}</dd>
 
-            <dt>Дата конца:</dt>
+            <dt>Дата окончания:</dt>
             <dd>{{ formatDateTime .EndTime }}</dd>
         </dl>
-        <p>Спасибо за вашу регистрацию. Ждем вас на мероприятии!</p>
-        <div class="footer">
-            &copy; 2025 Ваш сервис уведомлений
-        </div>
+
+        <p>Будем очень рады видеть вас!</p>
+    </div>
     </div>
 </body>
 
