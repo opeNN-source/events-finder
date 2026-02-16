@@ -131,11 +131,11 @@ export const Filter: React.FC<FilterProps> = ({
     }
 
     if (tempFilters.dateRange?.start) {
-      searchParams.date_start = `${tempFilters.dateRange.start}T00:00:00Z`;
+      searchParams.date_start = `${tempFilters.dateRange.start}T00:00:00.000000`;
     }
 
     if (tempFilters.dateRange?.end) {
-      searchParams.date_end = `${tempFilters.dateRange.end}T23:59:59Z`;
+      searchParams.date_end = `${tempFilters.dateRange.end}T23:59:59.999999`;
     }
 
     if (priceRange[0] > 0 || priceRange[1] < 10000) {
