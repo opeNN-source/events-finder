@@ -303,10 +303,10 @@ export const Settings = () => {
             <Typography variant="h6" gutterBottom>Локации</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Добавьте города для мероприятий</Typography>
             <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={9}>
+              <Grid>
                 <TextField fullWidth label="Название города" placeholder="Нижний Новгород" value={newLocation} onChange={(e) => setNewLocation(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && addLocation()} />
               </Grid>
-              <Grid item xs={12} sm={3}>
+              <Grid>
                 <Button fullWidth variant="outlined" startIcon={<Add />} onClick={addLocation} sx={{ height: '56px' }}>Добавить</Button>
               </Grid>
             </Grid>
@@ -340,10 +340,10 @@ export const Settings = () => {
             <Typography variant="h6" gutterBottom>Типы мероприятий</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Добавьте интересующие типы мероприятий</Typography>
             <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={9}>
+              <Grid>
                 <TextField fullWidth label="Тип мероприятия" placeholder="IT" value={newEventType} onChange={(e) => setNewEventType(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && addEventType()} />
               </Grid>
-              <Grid item xs={12} sm={3}>
+              <Grid>
                 <Button fullWidth variant="outlined" startIcon={<Add />} onClick={addEventType} sx={{ height: '56px' }}>Добавить</Button>
               </Grid>
             </Grid>
@@ -377,10 +377,10 @@ export const Settings = () => {
             <Typography variant="h6" gutterBottom>Источники</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Добавьте источники для парсинга мероприятий</Typography>
             <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={9}>
+              <Grid>
                 <TextField fullWidth label="Адрес сайта" placeholder="https://example.com" value={newSource} onChange={(e) => setNewSource(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && addSource()} />
               </Grid>
-              <Grid item xs={12} sm={3}>
+              <Grid>
                 <Button fullWidth variant="outlined" startIcon={<Add />} onClick={addSource} sx={{ height: '56px' }}>Добавить</Button>
               </Grid>
             </Grid>
@@ -414,7 +414,7 @@ export const Settings = () => {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Добавьте почетных участников для отслеживания (GR или Бизнес)</Typography>
 
             <Grid container spacing={2} sx={{ mb: 2 }} alignItems="center">
-              <Grid item xs={12} md={7}>
+              <Grid>
                 <TextField
                   fullWidth
                   label="Наименование"
@@ -424,7 +424,7 @@ export const Settings = () => {
                   onKeyPress={(e) => e.key === 'Enter' && addHonoredMember()}
                 />
               </Grid>
-              <Grid item xs={12} md={3}>
+              <Grid>
                 <FormControl fullWidth>
                   <InputLabel id="type-select-label">Тип</InputLabel>
                   <Select
@@ -438,7 +438,7 @@ export const Settings = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={2}>
+              <Grid>
                 <Button
                   fullWidth
                   variant="outlined"
@@ -523,10 +523,10 @@ export const Settings = () => {
             <Typography variant="h6" gutterBottom>Пользовательские запросы</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Добавьте пользовательские запросы для поиска</Typography>
             <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={9}>
+              <Grid>
                 <TextField fullWidth label="Запрос" placeholder="бизнес-завтраки в нижнем новгороде в ноябре" value={newCustomQuery} onChange={(e) => setNewCustomQuery(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && addCustomQuery()} />
               </Grid>
-              <Grid item xs={12} sm={3}>
+              <Grid>
                 <Button fullWidth variant="outlined" startIcon={<Add />} onClick={addCustomQuery} sx={{ height: '56px' }}>Добавить</Button>
               </Grid>
             </Grid>
