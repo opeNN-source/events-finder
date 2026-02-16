@@ -30,7 +30,6 @@ async def send_registration_email(
     Returns:
         Статус отправки
     """
-    print("hohlbi")
     events = await events_service.list(
         models.Event.id.in_(data.event_ids),
         auto_expunge=True,
@@ -68,7 +67,6 @@ async def send_registration_email(
 
     try:
         await mailer_grpc_client.send_registration_notification(req)
-
     except grpc.aio.AioRpcError as e:
         raise litestar.exceptions.HTTPException(
             status_code=502,

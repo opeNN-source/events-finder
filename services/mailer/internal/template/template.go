@@ -4,78 +4,60 @@ import (
 	"bytes"
 	"html/template"
 	"log/slog"
-	"path/filepath"
 	"time"
 )
 
+var htmlFuncMap = template.FuncMap{
+	"formatDateTime": func(t time.Time) string {
+		return t.Format("02.01.2006 15:04")
+	},
+}
+
+var icsFuncMap = template.FuncMap{}
+
+var (
+	TplHtmlName = "html_template"
+	TplIcsName  = "ics_template"
+
+	RegHtmlFilename = "event_registration.html"
+	RegIcsFilename  = "event_registration.ics"
+)
+
 type Renderer struct {
-	tpl    *template.Template
+	tpls   map[string]*template.Template
 	logger *slog.Logger
 }
 
-func NewRenderer(path string, logger *slog.Logger) (*Renderer, error) {
-	logger.Info("TEMPLATE: initializing renderer", "path", path)
-
-	htmlFiles, err := filepath.Glob(path + "/*.html")
-	if err != nil {
-		logger.Error(
-			"TEMPLATE: failed to parse html files",
-			"path", path,
-			"error", err,
-		)
-		return nil, err
-	}
-
-	icsFiles, err := filepath.Glob(path + "/*.ics")
-	if err != nil {
-		logger.Error(
-			"TEMPLATE: failed to parse ics files",
-			"path", path,
-			"error", err,
-		)
-		return nil, err
-	}
-
-	allFiles := append(htmlFiles, icsFiles...)
-
-	tpl := template.New("emails").Funcs(template.FuncMap{
-		"formatDateTime": func(t time.Time) string {
-			return t.Format("02.01.2006 15:04")
-		},
-	})
-
-	tpl, err = tpl.ParseFiles(allFiles...)
-
-	if err != nil {
-		logger.Error(
-			"TEMPLATE: failed to create templates",
-			"path", path,
-			"error", err,
-		)
-		return nil, err
-	}
-
+func NewRenderer(logger *slog.Logger) *Renderer {
 	return &Renderer{
-		tpl:    tpl,
+		tpls:   make(map[string]*template.Template),
 		logger: logger,
-	}, nil
+	}
 }
 
-func (r *Renderer) Render(name string, data any) (string, error) {
-	r.logger.Info("TEMPLATE: rendering template", "name", name)
+func (r *Renderer) LoadHtml(dir string) (err error) {
+	r.tpls[TplHtmlName], err = template.New("emailHtml").Funcs(htmlFuncMap).ParseGlob(dir + "/*.html")
 
+	return
+}
+
+func (r *Renderer) LoadIcs(dir string) (err error) {
+	r.tpls[TplIcsName], err = template.New("emailIcs").Funcs(icsFuncMap).ParseGlob(dir + "/*.ics")
+
+	return
+}
+
+func (r *Renderer) Render(name, tplName string, data any) (string, error) {
 	var buf bytes.Buffer
 
-	err := r.tpl.ExecuteTemplate(&buf, name, data)
+	err := r.tpls[tplName].ExecuteTemplate(&buf, name, data)
 	if err != nil {
 		r.logger.Error("TEMPLATE: render failed",
 			"name", name,
-			"error", err,
+			"error", err.Error(),
 		)
 		return "", err
 	}
-
-	r.logger.Info("TEMPLATE: render success", "name", name, "len", buf.Len())
 
 	return buf.String(), nil
 }

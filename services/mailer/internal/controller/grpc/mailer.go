@@ -20,13 +20,13 @@ type Config struct {
 
 type Server struct {
 	pb.UnimplementedEmailServiceServer
-	MailUsecase usecase.MailUsecase
+	mailUsecase usecase.MailUsecase
 	logger      *slog.Logger
 }
 
 func NewServer(mailSender usecase.MailUsecase, logger *slog.Logger) *Server {
 	return &Server{
-		MailUsecase: mailSender,
+		mailUsecase: mailSender,
 		logger:      logger,
 	}
 }
@@ -49,7 +49,7 @@ func (s *Server) SendRegistrationNotification(
 			nil
 	}
 
-	err := s.MailUsecase.RegMail(
+	err := s.mailUsecase.RegMail(
 		domain.NewRegInput(
 			req.To,
 			newArrEvents(req.Events),

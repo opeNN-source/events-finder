@@ -86,14 +86,14 @@ func (w *worker) run() {
 					"worker_id", w.id,
 					"attempt", attempt,
 					"to", job.to,
-					"error", err,
+					"error", err.Error(),
 				)
 
 				if !isRetryableSMTPError(err) {
 					w.logger.Warn("SMTP: non-retryable error, aborting",
 						"worker_id", w.id,
 						"to", job.to,
-						"error", err,
+						"error", err.Error(),
 					)
 					break
 				}
@@ -106,7 +106,7 @@ func (w *worker) run() {
 					"worker_id", w.id,
 					"to", job.to,
 					"subject", job.subject,
-					"error", lastErr,
+					"error", lastErr.Error(),
 				)
 			}
 		}

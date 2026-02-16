@@ -12,7 +12,6 @@ services:
           - "mailer:dev"
           - "mailer:latest"
           - "*"
-
       env_file: ./config/.env
 
     command: ["./mailer"]

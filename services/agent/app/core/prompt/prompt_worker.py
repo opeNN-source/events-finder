@@ -9,7 +9,7 @@ def load_file(file: str, promtp_dir: str) -> str:
     file_path = os.path.join(promtp_dir, file)
 
     try:
-        with open(file_path, 'r', encoding='utf=8') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             return f.read()
     except (FileNotFoundError, PermissionError, UnicodeDecodeError, Exception) as e:
         logger.error(f"Не удалось прочитать файл {file_path}: {e}")

@@ -108,7 +108,7 @@ class AgentConfigBase(Base):
     locations: list[str] = []
     event_types: list[str] = []
     sources: list[str] = []
-    honorary_participants: list[str] = []
+    honorary_participants: dict[str, list[str]] = {}
     custom_queries: list[str] = []
 
 

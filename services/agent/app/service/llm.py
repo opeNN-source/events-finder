@@ -5,18 +5,16 @@ from typing import List
 from langchain_core.tools import BaseTool
 from app.logger import logger
 
-gigachat_model = GigaChat(
-    credentials=settings.gigachat_api_key,
-    model=settings.gigachat_model,
-    scope=settings.gigachat_scope,
-    timeout=settings.gigachat_timeout,
-    verify_ssl_certs=False
-)
-
 
 class LlmService:
     def __init__(self):
-        self._llm: GigaChat = gigachat_model
+        self._llm: GigaChat = GigaChat(
+        credentials=settings.gigachat_api_key,
+        model=settings.gigachat_model,
+        scope=settings.gigachat_scope,
+        timeout=settings.gigachat_timeout,
+        verify_ssl_certs=False
+    )
         self.prompt_worker: PromptWorker = prompts
 
 
