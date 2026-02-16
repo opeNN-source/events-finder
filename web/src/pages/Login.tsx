@@ -20,7 +20,7 @@ import {
 export default function Login() {
   const navigate = useNavigate();
   const [error, setError] = useState<string>('');
-  const [isSignUp, setIsSignUp] = useState<boolean>(false);
+  const [isSignUp] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [email, setEmail] = useState<string>('');
@@ -77,11 +77,11 @@ export default function Login() {
     handleAuth(email, password);
   };
 
-  const resetForm = () => {
-    setEmail('');
-    setPassword('');
-    setError('');
-  };
+  // const resetForm = () => {
+  //   setEmail('');
+  //   setPassword('');
+  //   setError('');
+  // };
 
   return (
     <AppProvider theme={theme}>
@@ -180,22 +180,22 @@ export default function Login() {
               </Stack>
             </Box>
 
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <Button
-                variant="text"
-                onClick={() => {
-                  resetForm();
-                  setIsSignUp(!isSignUp);
-                }}
-                disabled={isLoading}
-                sx={{ textTransform: 'none' }}
-              >
-                {isSignUp
-                  ? 'Уже есть аккаунт? Войти'
-                  : 'Нет аккаунта? Зарегистрироваться'
-                }
-              </Button>
-            </Box>
+            {/*<Box sx={{ mt: 2, textAlign: 'center' }}>*/}
+            {/*  <Button*/}
+            {/*    variant="text"*/}
+            {/*    onClick={() => {*/}
+            {/*      resetForm();*/}
+            {/*      setIsSignUp(!isSignUp);*/}
+            {/*    }}*/}
+            {/*    disabled={isLoading}*/}
+            {/*    sx={{ textTransform: 'none' }}*/}
+            {/*  >*/}
+            {/*    {isSignUp*/}
+            {/*      ? 'Уже есть аккаунт? Войти'*/}
+            {/*      : 'Нет аккаунта? Зарегистрироваться'*/}
+            {/*    }*/}
+            {/*  </Button>*/}
+            {/*</Box>*/}
           </Paper>
         </Box>
       </Container>

@@ -1,17 +1,16 @@
-import {Sidebar} from '../components/Sidebar/Sidebar.tsx';
+import { Sidebar } from '../components/Sidebar/Sidebar.tsx';
 import EventCard from "../components/EventCard/EventCard.tsx";
-import type {Event, EventFilters} from '../utils.ts';
+import type { Event, EventFilters } from '../utils.ts';
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { styled, alpha } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import IconButton from '@mui/material/IconButton';
 import { Filter } from '../components/Filter/Filter.tsx';
 import { useState, useMemo, useEffect } from 'react';
 import { Calendar, momentLocalizer, type View, Views } from 'react-big-calendar';
 import moment from 'moment';
-import {useNavigate} from "react-router";
+import { useNavigate } from "react-router";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
@@ -20,6 +19,15 @@ import Alert from '@mui/material/Alert';
 import { useEvents, sendEmail, type SearchParams } from "../services/api.ts";
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 moment.locale('ru', {
   months: 'январь_февраль_март_апрель_май_июнь_июль_август_сентябрь_октябрь_ноябрь_декабрь'.split('_'),
@@ -98,25 +106,88 @@ interface CalendarEvent {
 
 const ALL_EVENTS_PARAMS = {};
 
+const getStorageItem = <T,>(key: string, initialValue: T): T => {
+  try {
+    const item = sessionStorage.getItem(key);
+    return item ? JSON.parse(item) : initialValue;
+  } catch (error) {
+    console.error(`Error parsing sessionStorage key "${key}":`, error);
+    return initialValue;
+  }
+};
+
 export const EventsList = () => {
   const matches = useMediaQuery('(min-width:1024px)');
-  const [searchParams, setSearchParams] = useState<SearchParams>({});
-  const { data: events, isLoading } = useEvents(searchParams);
 
+  const [searchParams, setSearchParams] = useState<SearchParams>(() =>
+    getStorageItem('events_searchParams', {})
+  );
+
+  const [filters, setFilters] = useState<EventFilters>(() =>
+    getStorageItem('events_filters', {})
+  );
+
+  const [searchQuery, setSearchQuery] = useState(() =>
+    getStorageItem('events_searchQuery', '')
+  );
+
+  const [viewMode, setViewMode] = useState<'cards' | 'calendar'>(() =>
+    getStorageItem('events_viewMode', 'calendar')
+  );
+
+  const [calendarView, setCalendarView] = useState<View>(() =>
+    getStorageItem('events_calendarView', Views.MONTH)
+  );
+
+  const [currentDate, setCurrentDate] = useState(() => {
+    const saved = sessionStorage.getItem('events_currentDate');
+    return saved ? new Date(JSON.parse(saved)) : new Date();
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem('events_searchParams', JSON.stringify(searchParams));
+  }, [searchParams]);
+
+  useEffect(() => {
+    sessionStorage.setItem('events_filters', JSON.stringify(filters));
+  }, [filters]);
+
+  useEffect(() => {
+    sessionStorage.setItem('events_searchQuery', JSON.stringify(searchQuery));
+  }, [searchQuery]);
+
+  useEffect(() => {
+    sessionStorage.setItem('events_viewMode', JSON.stringify(viewMode));
+  }, [viewMode]);
+
+  useEffect(() => {
+    sessionStorage.setItem('events_calendarView', JSON.stringify(calendarView));
+  }, [calendarView]);
+
+  useEffect(() => {
+    sessionStorage.setItem('events_currentDate', JSON.stringify(currentDate));
+  }, [currentDate]);
+
+
+  const { data: events, isLoading } = useEvents(searchParams);
   const { data: allEventsData } = useEvents(ALL_EVENTS_PARAMS);
 
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filters, setFilters] = useState<EventFilters>({});
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'cards' | 'calendar'>('cards');
-  const [calendarView, setCalendarView] = useState<View>(Views.MONTH);
-  const [currentDate, setCurrentDate] = useState(new Date());
+
   const [selectedEvents, setSelectedEvents] = useState<number[]>([]);
+
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const navigate = useNavigate();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const selectedEventsData = useMemo(() => {
+    return (allEventsData?.items || []).filter((event: Event) =>
+      selectedEvents.includes(event.id)
+    );
+  }, [selectedEvents, allEventsData]);
 
   const [allLocations, setAllLocations] = useState<string[]>([]);
   const [allFormats, setAllFormats] = useState<string[]>([]);
@@ -159,7 +230,10 @@ export const EventsList = () => {
   };
 
   const handleApplyFilters = (params: SearchParams) => {
-    setSearchParams(params);
+    setSearchParams(prev => ({
+      name: prev.name,
+      ...params
+    }));
   };
 
   const handleViewModeChange = (mode: 'cards' | 'calendar') => {
@@ -195,15 +269,14 @@ export const EventsList = () => {
   };
 
   const handleSubmit = async () => {
-    if (selectedEvents.length === 0) {
-      return;
-    }
+    if (selectedEvents.length === 0) return;
 
     setIsSending(true);
     try {
       await sendEmail(selectedEvents);
       setIsSubmitted(true);
       setShowSuccessAlert(true);
+      setIsPreviewOpen(false);
       setTimeout(() => {
         setSelectedEvents([]);
         setIsSubmitted(false);
@@ -214,6 +287,10 @@ export const EventsList = () => {
     } finally {
       setIsSending(false);
     }
+  };
+
+  const handleRemoveSelected = (id: number) => {
+    setSelectedEvents(prev => prev.filter(eventId => eventId !== id));
   };
 
   const handleSuccessAlertClose = () => {
@@ -293,7 +370,7 @@ export const EventsList = () => {
 
   const showFloatingAction = selectedEvents.length > 0 && !isSubmitted;
 
-  if (isLoading) {
+  if (isLoading && !events) {
     return (
       <div style={matches ? {paddingTop: '25px'} : {paddingTop: '75px'}}>
         <Sidebar/>
@@ -324,9 +401,10 @@ export const EventsList = () => {
               onKeyPress={handleKeyPress}
             />
           </Search>
-          <IconButton onClick={handleFilterOpen}>
+          <div style={{display: 'flex', alignItems: 'center', cursor: 'pointer'}} onClick={handleFilterOpen}>
             <FilterAltIcon/>
-          </IconButton>
+            <span className='font-[14px]'>Фильтры</span>
+          </div>
         </div>
 
         {viewMode === 'cards' && filteredEvents.length > 0 && (
@@ -447,24 +525,65 @@ export const EventsList = () => {
 
       {showFloatingAction && (
         <FloatingActionContainer>
-          {isSubmitted ? (
-            <span style={{ color: '#2e7d32', fontWeight: '500' }}>Отправлено ✓</span>
-          ) : (
-            <>
-              <span>Выбрано: {selectedEvents.length}</span>
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                onClick={handleSubmit}
-                disabled={isSending}
-              >
-                {isSending ? 'Отправка...' : 'Отправить'}
-              </Button>
-            </>
-          )}
+          <span>Выбрано: {selectedEvents.length}</span>
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={() => setIsPreviewOpen(true)}
+          >
+            Просмотреть выбранные
+          </Button>
         </FloatingActionContainer>
       )}
+
+      <Dialog
+        open={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Выбранные мероприятия</DialogTitle>
+        <DialogContent dividers>
+          {selectedEventsData.length > 0 ? (
+            <List>
+              {selectedEventsData.map((event: Event) => (
+                <ListItem
+                  key={event.id}
+                  secondaryAction={
+                    <IconButton edge="end" onClick={() => handleRemoveSelected(event.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  }
+                >
+                  <ListItemText
+                    primary={event.name}
+                    secondary={moment(event.date_start).format('DD MMMM YYYY')}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography>Список пуст</Typography>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ padding: '16px' }}>
+          <Button
+            onClick={() => setIsPreviewOpen(false)}
+            variant="outlined"
+          >
+            Выбрать еще
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            color="primary"
+            disabled={isSending || selectedEvents.length === 0}
+          >
+            {isSending ? 'Отправка...' : 'Отправить'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Filter
         open={filterOpen}

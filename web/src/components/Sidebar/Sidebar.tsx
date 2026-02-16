@@ -187,7 +187,6 @@ export const Sidebar = () => {
       >
         <DrawerHeader>
           <div style={{width: "220px", display: 'flex', alignItems: 'center', gap: '10px'}}>
-            <div style={{height: '40px', width: '40px', borderRadius: '100px', backgroundColor: 'lightgray'}}/>
             <span style={{fontWeight: 'bold', fontSize: '14px'}}>
               {userEmail || 'user@example.com'}
             </span>
