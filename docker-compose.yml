@@ -1,0 +1,131 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: auth_postgres
+    env_file:
+      - auth/.env
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+    networks:
+      - auth_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    image: migrate/migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - auth/.env
+    command:
+      [
+        "-path",
+        "/migrations",
+        "-database",
+        "postgres://auth:auth@postgres:5432/auth?sslmode=disable",
+        "up",
+      ]
+    volumes:
+      - ./auth/migrations:/migrations
+    networks:
+      - auth_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: auth_redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    networks:
+      - auth_network
+    volumes:
+      - redis_data:/data
+
+  auth_service:
+    image: auth_service:dev
+    container_name: auth_service
+    env_file:
+      - auth/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - auth_network
+      - shared_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mailer:
+    image: "mailer:dev"
+    container_name: mailer-mailer-1
+    command: ["./mailer"]
+    networks:
+      - shared_network
+    healthcheck:
+      test: /bin/sh /mailer/docker/healthcheck.sh
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  db:
+    image: "postgres:18-alpine"
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/create_dev_database.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - postgres-net
+    env_file:
+      - server/.env
+    healthcheck:
+      test: pg_isready
+      interval: 5s
+      timeout: 30s
+      retries: 5
+      start_period: 5s
+
+  server:
+    image: "server:dev"
+    ports:
+      - "8080:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - postgres-net
+      - shared_network
+    env_file:
+      - server/.env
+    environment:
+      POSTGRES_HOST: db
+
+    command: python3 -m server
+    healthcheck:
+      test: /bin/sh /server/docker/healthcheck.sh
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  migrations:
+  auth_db_data:
+  postgres-data:
+  redis_data:
+    driver: local
+
+networks:
+  postgres-net:
+    driver: bridge
+  auth_network:
+    driver: bridge
+  shared_network:
+    external:
+      name: shared_network
